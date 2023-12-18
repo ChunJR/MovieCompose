@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
@@ -27,15 +29,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.chun.moviecompose.ui.theme.*
 
 @Composable
 fun ShimmerEffect() {
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(all = SMALL_PADDING),
         verticalArrangement = Arrangement.spacedBy(SMALL_PADDING),
     ) {
-        items(count = 5) {
+        items(count = 10) {
             AnimatedShimmerItem()
         }
     }
@@ -62,25 +66,16 @@ fun AnimatedShimmerItem() {
 @Composable
 fun ShimmerItem(alpha: Float) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
         color = if (isSystemInDarkTheme()) Color.Black else ShimmerLightGray,
         shape = RoundedCornerShape(size = LARGE_PADDING),
     ) {
         Column(
             modifier = Modifier.padding(all = MEDIUM_PADDING),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Surface(
-                modifier = Modifier
-                    .alpha(alpha = alpha)
-                    .fillMaxWidth(0.8f)
-                    .height(NAME_SHIMMER_HEIGHT),
-                color = if (isSystemInDarkTheme()) ShimmerDarkGray else ShimmerMediumGray,
-                shape = RoundedCornerShape(size = SMALL_PADDING),
-            ) {}
-            Spacer(modifier = Modifier.padding(all = SMALL_PADDING))
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Surface(
                     modifier = Modifier
                         .alpha(alpha = alpha)
@@ -89,19 +84,16 @@ fun ShimmerItem(alpha: Float) {
                     shape = RoundedCornerShape(size = SMALL_PADDING),
                 ) {}
                 Spacer(modifier = Modifier.padding(all = SMALL_PADDING))
-                Column {
-                    repeat(4) {
-                        Surface(
-                            modifier = Modifier
-                                .alpha(alpha = alpha)
-                                .fillMaxWidth()
-                                .height(ABOUT_SHIMMER_HEIGHT),
-                            color = if (isSystemInDarkTheme()) ShimmerDarkGray else ShimmerMediumGray,
-                            shape = RoundedCornerShape(size = SMALL_PADDING),
-                        ) {}
-                        Spacer(modifier = Modifier.padding(all = EXTRA_SMALL_PADDING))
-                    }
-                }
+                Surface(
+                    modifier = Modifier
+                        .alpha(alpha = alpha)
+                        .fillMaxWidth()
+                        .height(ABOUT_SHIMMER_HEIGHT),
+                    color = if (isSystemInDarkTheme()) ShimmerDarkGray else ShimmerMediumGray,
+                    shape = RoundedCornerShape(size = SMALL_PADDING),
+                ) {}
+                Spacer(modifier = Modifier.padding(all = EXTRA_SMALL_PADDING))
+
             }
         }
     }

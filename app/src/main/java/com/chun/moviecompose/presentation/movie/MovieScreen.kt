@@ -10,6 +10,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.chun.moviecompose.ui.theme.*
@@ -23,6 +24,7 @@ fun MovieScreen(
     viewModel: MovieViewModel = hiltViewModel(),
 ) {
     val movieList = viewModel.uiState.collectAsState()
+    val searchQuery by viewModel.searchQuery
 
     val systemUiController = rememberSystemUiController()
     val systemBarColor = MaterialTheme.colors.statusBarColor
@@ -32,14 +34,17 @@ fun MovieScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Movies",
-                        color = MaterialTheme.colors.topAppBarContentColor,
-                    )
+            SearchTopBar(
+                text = searchQuery,
+                onTextChange = {
+                    viewModel.updateSearchQuery(query = it)
                 },
-                backgroundColor = if (isSystemInDarkTheme()) Purple80 else Purple40,
+                onSearchClicked = {
+                    viewModel.searchMovies(it)
+                },
+                onCloseClicked = {
+                    viewModel.updateSearchQuery("")
+                },
             )
         },
         content = {
