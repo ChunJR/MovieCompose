@@ -3,11 +3,13 @@ package com.chun.moviecompose.presentation.movie
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.chun.moviecompose.domain.model.Movie
 import com.chun.moviecompose.domain.usecases.UseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,8 +18,8 @@ class MovieViewModel @Inject constructor(
     private val useCases: UseCases,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<MovieState>(MovieState.Loading)
-    val uiState: StateFlow<MovieState> = _uiState
+    private val _searchedMovies = MutableStateFlow<PagingData<Movie>>(PagingData.empty())
+    val searchedMovies = _searchedMovies
 
     private val _searchQuery = mutableStateOf("")
     val searchQuery = _searchQuery
@@ -27,16 +29,10 @@ class MovieViewModel @Inject constructor(
     }
 
     fun searchMovies(query: String) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            useCases.searchHeroUseCase(query).cachedIn(viewModelScope).collect {
-//                _searchedHeroes.value = it
-//            }
-//        }
-        viewModelScope.launch {
-            useCases.searchAllMoviesUseCase(query, 1)
-                .collect { state ->
-                    _uiState.value = state
-                }
+        viewModelScope.launch(Dispatchers.IO) {
+            useCases.searchAllMoviesUseCase(query).cachedIn(viewModelScope).collect {
+                _searchedMovies.value = it
+            }
         }
     }
 }

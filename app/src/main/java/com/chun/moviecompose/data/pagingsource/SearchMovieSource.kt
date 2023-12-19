@@ -1,5 +1,6 @@
 package com.chun.moviecompose.data.pagingsource
 
+import androidx.paging.LoadState.Loading.endOfPaginationReached
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.chun.moviecompose.data.remote.MovieApi
@@ -9,8 +10,7 @@ import javax.inject.Inject
 
 class SearchMovieSource @Inject constructor(
     private val movieApi: MovieApi,
-    private val searchText: String,
-    private val page: Int,
+    private val searchText: String
 ) : PagingSource<Int, Movie>() {
     override fun getRefreshKey(state: PagingState<Int, Movie>): Int? {
         return state.anchorPosition
@@ -18,13 +18,14 @@ class SearchMovieSource @Inject constructor(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Movie> {
         return try {
+            val page = params.key ?: Constants.INITIAL_PAGE
             val response = movieApi.searchMovies(apiKey = Constants.API_KEY, searchText = searchText, page = page)
             val movies = response.Search
             if (movies.isNotEmpty()) {
                 LoadResult.Page(
                     data = movies,
-                    prevKey = page,
-                    nextKey = page + 1,
+                    prevKey = if(page == Constants.INITIAL_PAGE) null else page.minus(1),
+                    nextKey = if (endOfPaginationReached) null else page.plus(1)
                 )
             } else {
                 LoadResult.Page(

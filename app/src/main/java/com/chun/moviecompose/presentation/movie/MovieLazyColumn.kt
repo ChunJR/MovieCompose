@@ -4,18 +4,15 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +22,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.chun.moviecompose.R
@@ -34,24 +34,24 @@ import com.chun.moviecompose.presentation.common.ShimmerEffect
 import com.chun.moviecompose.ui.theme.EXTRA_SMALL_PADDING
 import com.chun.moviecompose.ui.theme.IMAGE_HEIGHT
 import com.chun.moviecompose.ui.theme.PurpleGrey80
-import com.chun.moviecompose.ui.theme.SMALL_PADDING
 
 @ExperimentalFoundationApi
 @Composable
 fun MovieLazyColumn(
-    navController: NavHostController,
-    state: State<MovieState>,
+    movies: LazyPagingItems<Movie>,
+    searchQuery: String,
     modifier: Modifier = Modifier
 ) {
-    val isValid = handleResult(state = state)
+    val isValid = handleResult(movies, searchQuery)
     if (isValid) {
-        val movies = (state.value as MovieState.Success).movies
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = modifier,
         ) {
-            items(movies) { movie ->
-                CategoryItem(movie, navController)
+            items(count = movies.itemCount, key = movies.itemKey { it.imdbID }) { index ->
+                movies[index]?.let {
+                    CategoryItem(it)
+                }
             }
         }
     }
@@ -60,7 +60,6 @@ fun MovieLazyColumn(
 @Composable
 private fun CategoryItem(
     movie: Movie,
-    navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -100,22 +99,39 @@ private fun CategoryItem(
 
 @Composable
 fun handleResult(
-    state: State<MovieState>,
+    movies: LazyPagingItems<Movie>,
+    searchQuery: String,
 ): Boolean {
-    return when (state.value) {
-        is MovieState.Success -> true
-        is MovieState.Loading -> {
-            ShimmerEffect()
-            false
-        }
-        is MovieState.Error -> {
-            val message = (state.value as MovieState.Error).errorMessage
-            EmptyScreen(message)
-            false
+    if (searchQuery.isEmpty()) {
+        EmptyScreen("Please input search text")
+        return false
+    }
+
+    movies.apply {
+        val error = when {
+            loadState.refresh is LoadState.Error -> loadState.refresh as LoadState.Error
+            loadState.prepend is LoadState.Error -> loadState.prepend as LoadState.Error
+            loadState.append is LoadState.Error -> loadState.append as LoadState.Error
+            else -> null
         }
 
-        else -> {
-            false
+        return when {
+            loadState.refresh is LoadState.NotLoading && movies.itemCount == 0 -> {
+                EmptyScreen("Please input search text")
+                false
+            }
+
+            loadState.refresh is LoadState.Loading -> {
+                ShimmerEffect()
+                false
+            }
+
+            error != null -> {
+                EmptyScreen(error.toString())
+                false
+            }
+
+            else -> true
         }
     }
 }

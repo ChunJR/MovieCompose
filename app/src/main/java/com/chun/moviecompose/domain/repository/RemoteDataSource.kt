@@ -1,8 +1,9 @@
 package com.chun.moviecompose.domain.repository
 
-import com.chun.moviecompose.presentation.movie.MovieState
+import androidx.paging.PagingData
+import com.chun.moviecompose.domain.model.Movie
 import kotlinx.coroutines.flow.Flow
 
 interface RemoteDataSource {
-    fun searchMovies(searchText: String, page: Int): Flow<MovieState>
+    fun searchMovies(searchText: String): Flow<PagingData<Movie>>
 }
