@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MovieCompose</string>
+    <string name="network_error_icon">Network Error Icon</string>
+    <string name="movie_logo">Logo</string>
+    <string name="search_icon">Search Icon</string>
+    <string name="close_icon">Close Icon</string>
+</resources>
